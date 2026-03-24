@@ -2,10 +2,28 @@ import { describe, expect, test } from "bun:test";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import * as pty from "node-pty";
 
 const wrapPath = join(process.cwd(), "dist", "wrap.js");
 const hasBuiltWrap = existsSync(wrapPath);
-const canRunPtyE2e = hasBuiltWrap && process.stdout.isTTY;
+
+const canSpawnPtyInCurrentEnvironment = (): boolean => {
+  try {
+    const child = pty.spawn(process.execPath, ["-e", "process.exit(0)"], {
+      name: "xterm-color",
+      cols: 80,
+      rows: 24,
+      cwd: process.cwd(),
+      env: process.env
+    });
+    child.kill();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const canRunPtyE2e = hasBuiltWrap && process.stdout.isTTY && canSpawnPtyInCurrentEnvironment();
 
 const runWrap = (args: string[]) => {
   return spawnSync(process.execPath, [wrapPath, ...args], {
