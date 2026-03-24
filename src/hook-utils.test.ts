@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { AI_CLI_REGISTRY, buildHookBlock, buildPtyHookBlock, removeHookBlock, upsertHookBlock } from "./hook-utils.js";
+import { AI_CLI_REGISTRY, buildHookBlock, buildMultiPtyHookBlock, buildPtyHookBlock, removeHookBlock, upsertHookBlock } from "./hook-utils.js";
+import type { HookTarget } from "./hook-utils.js";
 
 describe("hook utils", () => {
   test("builds hook block for command", () => {
@@ -87,5 +88,77 @@ describe("PTY wrapper mode", () => {
     const block = buildPtyHookBlock({ functionName: "aider", upstreamCommand: "aider" });
     expect(block).toContain("# >>> cclatex auto hook >>>");
     expect(block).toContain("# <<< cclatex auto hook <<<");
+  });
+});
+
+describe("buildMultiPtyHookBlock", () => {
+  test("generates functions for each target in one marker block", () => {
+    const block = buildMultiPtyHookBlock([
+      { functionName: "claude", upstreamCommand: "claude" },
+      { functionName: "oc", upstreamCommand: "opencode" },
+    ]);
+    expect(block).toContain("claude() {");
+    expect(block).toContain("oc() {");
+    // Only ONE marker pair
+    const startCount = (block.match(/# >>> cclatex auto hook >>>/g) || []).length;
+    expect(startCount).toBe(1);
+  });
+
+  test("each target gets CCLATEX_NO_WRAP + __CCLATEX_ACTIVE guards", () => {
+    const block = buildMultiPtyHookBlock([
+      { functionName: "aider", upstreamCommand: "aider" },
+    ]);
+    expect(block).toContain("CCLATEX_NO_WRAP");
+    expect(block).toContain("__CCLATEX_ACTIVE");
+  });
+
+  test("each target uses cclatex-wrap not pipe", () => {
+    const block = buildMultiPtyHookBlock([
+      { functionName: "goose", upstreamCommand: "goose" },
+    ]);
+    expect(block).toContain("cclatex-wrap goose");
+    expect(block).not.toContain("| cclatex");
+  });
+
+  test("throws on invalid function name", () => {
+    expect(() =>
+      buildMultiPtyHookBlock([{ functionName: "bad name", upstreamCommand: "goose" }])
+    ).toThrow("Invalid function name");
+  });
+});
+
+describe("buildMultiPtyHookBlock", () => {
+  test("generates functions for each target in one marker block", () => {
+    const block = buildMultiPtyHookBlock([
+      { functionName: "claude", upstreamCommand: "claude" },
+      { functionName: "oc", upstreamCommand: "opencode" },
+    ]);
+    expect(block).toContain("claude() {");
+    expect(block).toContain("oc() {");
+    // Only ONE marker pair
+    const startCount = (block.match(/# >>> cclatex auto hook >>>/g) || []).length;
+    expect(startCount).toBe(1);
+  });
+
+  test("each target gets CCLATEX_NO_WRAP + __CCLATEX_ACTIVE guards", () => {
+    const block = buildMultiPtyHookBlock([
+      { functionName: "aider", upstreamCommand: "aider" },
+    ]);
+    expect(block).toContain("CCLATEX_NO_WRAP");
+    expect(block).toContain("__CCLATEX_ACTIVE");
+  });
+
+  test("each target uses cclatex-wrap not pipe", () => {
+    const block = buildMultiPtyHookBlock([
+      { functionName: "goose", upstreamCommand: "goose" },
+    ]);
+    expect(block).toContain("cclatex-wrap goose");
+    expect(block).not.toContain("| cclatex");
+  });
+
+  test("throws on invalid function name", () => {
+    expect(() =>
+      buildMultiPtyHookBlock([{ functionName: "bad name", upstreamCommand: "goose" }])
+    ).toThrow("Invalid function name");
   });
 });
