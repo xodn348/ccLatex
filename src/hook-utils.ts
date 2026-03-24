@@ -152,7 +152,8 @@ export const buildMultiPtyHookBlock = (targets: HookTarget[]): string => {
       "}",
     ].join("\n"));
   }
-  return [HOOK_MARKER_START, ...fnBodies, HOOK_MARKER_END].join("\n");
+  const content = fnBodies.length === 0 ? ["# No AI CLI hooks configured"] : fnBodies;
+  return [HOOK_MARKER_START, ...content, HOOK_MARKER_END].join("\n");
 };
 
 export const removeHookBlock = (content: string): string => {

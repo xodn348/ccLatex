@@ -115,4 +115,19 @@ describe("integration: full setup pipeline", () => {
     expect(writtenContent).toContain("# >>> cclatex auto hook >>>");
     expect(writtenContent).toContain("# <<< cclatex auto hook <<<");
   });
+
+  test("command -v cclatex-wrap PATH check is present in written rc content", () => {
+    let writtenContent = "";
+
+    runSetup({
+      rc: "/tmp/int-test.zshrc",
+      detectFn: () => [{ name: "Claude", binName: "claude", functionName: "claude" }],
+      fsFns: {
+        ...noopFsFns,
+        writeFileSync: (_p: string, c: string) => { writtenContent = c; },
+      },
+    });
+
+    expect(writtenContent).toContain("command -v cclatex-wrap");
+  });
 });

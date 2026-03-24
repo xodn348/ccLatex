@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { AI_CLI_REGISTRY, buildHookBlock, buildMultiPtyHookBlock, buildPtyHookBlock, removeHookBlock, upsertHookBlock } from "./hook-utils.js";
+import { AI_CLI_REGISTRY, buildHookBlock, buildMultiPtyHookBlock, buildPtyHookBlock, HOOK_MARKER_END, HOOK_MARKER_START, removeHookBlock, upsertHookBlock } from "./hook-utils.js";
 import type { HookTarget } from "./hook-utils.js";
 
 describe("hook utils", () => {
@@ -120,5 +120,12 @@ describe("buildMultiPtyHookBlock", () => {
     expect(() =>
       buildMultiPtyHookBlock([{ functionName: "bad name", upstreamCommand: "goose" }])
     ).toThrow("Invalid function name");
+  });
+
+  test("empty targets produces # No AI CLI hooks configured comment", () => {
+    const block = buildMultiPtyHookBlock([]);
+    expect(block).toContain(HOOK_MARKER_START);
+    expect(block).toContain(HOOK_MARKER_END);
+    expect(block).toContain("# No AI CLI hooks configured");
   });
 });
