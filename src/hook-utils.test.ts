@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { AI_CLI_REGISTRY, buildHookBlock, removeHookBlock, upsertHookBlock } from "./hook-utils.js";
+import { AI_CLI_REGISTRY, buildHookBlock, buildPtyHookBlock, removeHookBlock, upsertHookBlock } from "./hook-utils.js";
 
 describe("hook utils", () => {
   test("builds hook block for command", () => {
@@ -47,5 +47,45 @@ describe("AI CLI registry", () => {
 
   test("registry contains entry with functionName 'aider'", () => {
     expect(AI_CLI_REGISTRY.some((e) => e.functionName === "aider")).toBe(true);
+  });
+});
+
+describe("PTY wrapper mode", () => {
+  test("buildPtyHookBlock uses cclatex-wrap not pipe", () => {
+    const block = buildPtyHookBlock({ functionName: "oc", upstreamCommand: "opencode" });
+    expect(block).toContain("cclatex-wrap opencode");
+    expect(block).not.toContain("| cclatex");
+  });
+
+  test("buildPtyHookBlock contains CCLATEX_NO_WRAP bypass", () => {
+    const block = buildPtyHookBlock({ functionName: "claude", upstreamCommand: "claude" });
+    expect(block).toContain("CCLATEX_NO_WRAP");
+  });
+
+  test("buildPtyHookBlock contains __CCLATEX_ACTIVE recursive guard", () => {
+    const block = buildPtyHookBlock({ functionName: "oc", upstreamCommand: "opencode" });
+    expect(block).toContain("__CCLATEX_ACTIVE");
+  });
+
+  test("buildPtyHookBlock contains command -v cclatex-wrap PATH check", () => {
+    const block = buildPtyHookBlock({ functionName: "oc", upstreamCommand: "opencode" });
+    expect(block).toContain("command -v cclatex-wrap");
+  });
+
+  test("buildPtyHookBlock contains npx fallback", () => {
+    const block = buildPtyHookBlock({ functionName: "oc", upstreamCommand: "opencode" });
+    expect(block).toContain("npx --yes cclatex-wrap");
+  });
+
+  test("buildPtyHookBlock throws on invalid function name", () => {
+    expect(() =>
+      buildPtyHookBlock({ functionName: "invalid name", upstreamCommand: "opencode" })
+    ).toThrow("Invalid function name");
+  });
+
+  test("buildPtyHookBlock wraps in marker block", () => {
+    const block = buildPtyHookBlock({ functionName: "aider", upstreamCommand: "aider" });
+    expect(block).toContain("# >>> cclatex auto hook >>>");
+    expect(block).toContain("# <<< cclatex auto hook <<<");
   });
 });

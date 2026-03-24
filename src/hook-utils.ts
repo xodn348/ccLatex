@@ -83,6 +83,43 @@ export const buildHookBlock = (target: HookTarget): string => {
   ].join("\n");
 };
 
+export const buildPtyHookBlock = (target: HookTarget): string => {
+  if (!isValidFunctionName(target.functionName)) {
+    throw new Error(`Invalid function name: ${target.functionName}`);
+  }
+  if (!isValidCommandToken(target.upstreamCommand)) {
+    throw new Error(`Invalid upstream command: ${target.upstreamCommand}`);
+  }
+
+  const invoke = buildInvoker(target);
+
+  return [
+    HOOK_MARKER_START,
+    `# command: ${target.functionName} -> ${target.upstreamCommand} (PTY mode)`,
+    `if alias ${target.functionName} >/dev/null 2>&1; then unalias ${target.functionName}; fi`,
+    `${target.functionName}() {`,
+    "  if [[ \"${CCLATEX_NO_WRAP:-0}\" == \"1\" ]]; then",
+    `    ${invoke}`,
+    "    return $?",
+    "  fi",
+    "  if [[ \"${__CCLATEX_ACTIVE:-0}\" == \"1\" ]]; then",
+    `    ${invoke}`,
+    "    return $?",
+    "  fi",
+    "  export __CCLATEX_ACTIVE=1",
+    "  if command -v cclatex-wrap >/dev/null 2>&1; then",
+    `    cclatex-wrap ${target.upstreamCommand} "$@"`,
+    "  else",
+    `    npx --yes cclatex-wrap ${target.upstreamCommand} "$@"`,
+    "  fi",
+    "  local exit_code=$?",
+    "  unset __CCLATEX_ACTIVE",
+    "  return $exit_code",
+    "}",
+    HOOK_MARKER_END
+  ].join("\n");
+};
+
 export const removeHookBlock = (content: string): string => {
   const pattern = new RegExp(`${HOOK_MARKER_START}[\\s\\S]*?${HOOK_MARKER_END}\\n?`, "g");
   return content.replace(pattern, "").replace(/\n{3,}/g, "\n\n");
