@@ -130,6 +130,7 @@ const isMain = (() => {
     const currentPath = realpathSync(fileURLToPath(import.meta.url));
     return entryPath === currentPath;
   } catch {
+    // realpathSync may fail if argv[1] path does not exist — treat as non-main
     return false;
   }
 })();

@@ -88,8 +88,8 @@ describe("runSetup", () => {
 
   test("prints installed CLI names to stdout", () => {
     const output: string[] = [];
-    const origLog = console.log;
-    console.log = (msg: string) => output.push(msg);
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk: string | Uint8Array) => { output.push(String(chunk)); return true; };
 
     runSetup({
       rc: "/tmp/test.zshrc",
@@ -97,15 +97,15 @@ describe("runSetup", () => {
       fsFns: { ...noopFsFns, writeFileSync: () => {} },
     });
 
-    console.log = origLog;
-    expect(output.join("\n")).toContain("claude");
+    process.stdout.write = origWrite;
+    expect(output.join("")).toContain("claude");
   });
 
   test("does not write rc file when no CLIs found", () => {
     let writeCallCount = 0;
     const output: string[] = [];
-    const origLog = console.log;
-    console.log = (msg: string) => output.push(msg);
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk: string | Uint8Array) => { output.push(String(chunk)); return true; };
 
     runSetup({
       rc: "/tmp/test.zshrc",
@@ -116,9 +116,29 @@ describe("runSetup", () => {
       },
     });
 
-    console.log = origLog;
+    process.stdout.write = origWrite;
     expect(writeCallCount).toBe(0);
-    expect(output.join("\n")).toContain("No AI CLI tools found");
+    expect(output.join("")).toContain("No AI CLI tools found");
+  });
+
+  test("does not write rc file when no CLIs found", () => {
+    let writeCallCount = 0;
+    const output: string[] = [];
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk: string | Uint8Array) => { output.push(String(chunk)); return true; };
+
+    runSetup({
+      rc: "/tmp/test.zshrc",
+      detectFn: () => [],
+      fsFns: {
+        ...noopFsFns,
+        writeFileSync: () => { writeCallCount++; },
+      },
+    });
+
+    process.stdout.write = origWrite;
+    expect(writeCallCount).toBe(0);
+    expect(output.join("")).toContain("No AI CLI tools found");
   });
 
   test("uses rc option path instead of default rc path", () => {

@@ -72,11 +72,11 @@ export const runSetup = (options: RunSetupOptions = {}): void => {
   const installed = detectFn();
 
   if (installed.length === 0) {
-    console.log("No AI CLI tools found");
+    process.stdout.write("No AI CLI tools found\n");
     return;
   }
 
-  console.log(`Installing hooks for: ${installed.map((e) => e.functionName).join(", ")}`);
+  process.stdout.write(`Installing hooks for: ${installed.map((e) => e.functionName).join(", ")}\n`);
 
   const targets = installed.map((e) => ({
     functionName: e.functionName,
@@ -96,6 +96,7 @@ const isMain = (() => {
     const currentPath = realpathSync(fileURLToPath(import.meta.url));
     return entryPath === currentPath;
   } catch {
+    // realpathSync may fail if argv[1] path does not exist — treat as non-main
     return false;
   }
 })();
