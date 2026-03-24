@@ -11,6 +11,23 @@ export type HookTarget = {
   upstreamCommand: string;
 };
 
+export type AiCliEntry = {
+  name: string;
+  binName: string;
+  functionName: string;
+};
+
+export const AI_CLI_REGISTRY: AiCliEntry[] = [
+  { name: "Claude",    binName: "claude",    functionName: "claude"   },
+  { name: "Codex",     binName: "codex",     functionName: "codex"    },
+  { name: "OpenCode",  binName: "opencode",  functionName: "oc"       },
+  { name: "OpenCode",  binName: "opencode",  functionName: "opencode" },
+  { name: "Aider",     binName: "aider",     functionName: "aider"    },
+  { name: "Goose",     binName: "goose",     functionName: "goose"    },
+  { name: "Cline",     binName: "cline",     functionName: "cline"    },
+  { name: "Continue",  binName: "continue",  functionName: "continue" },
+];
+
 export const getDefaultRcPath = (shellPath: string): string => {
   const shellName = basename(shellPath || "zsh");
   if (shellName === "bash") {
