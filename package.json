@@ -1,0 +1,49 @@
+{
+  "name": "cclatex",
+  "version": "0.1.0",
+  "description": "Render LaTeX math in terminal streams",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "bin": {
+    "cclatex": "./dist/cli.js",
+    "cclatex-hook": "./dist/hook.js",
+    "cclatex-wrap": "./dist/wrap.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "latex",
+    "terminal",
+    "math",
+    "cli",
+    "pipe"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "bun run typecheck && bun test && bun run build"
+  },
+  "dependencies": {
+    "mathjax-full": "^3.2.2",
+    "meow": "^13.2.0",
+    "node-pty": "^1.0.0",
+    "sharp": "^0.34.4",
+    "strip-ansi": "^7.1.0",
+    "terminal-image": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "bun-types": "^1.3.9",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  }
+}
