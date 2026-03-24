@@ -209,6 +209,7 @@ const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> =>
         try {
           process.stdin.setRawMode(false);
         } catch {
+          // setRawMode may fail in non-TTY contexts — safe to ignore
         }
       }
 
@@ -221,6 +222,8 @@ const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> =>
         if (transformed) {
           process.stdout.write(transformed);
         }
+      }).catch((_err: unknown) => {
+        // queue processing error — data may be dropped
       });
     });
 

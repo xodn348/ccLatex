@@ -3,7 +3,6 @@ import { homedir } from "node:os";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  buildHookBlock,
   buildPtyHookBlock,
   getDefaultRcPath,
   removeHookBlock,
