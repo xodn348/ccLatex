@@ -6,6 +6,7 @@ export default defineConfig([
       cli: "src/cli.ts",
       hook: "src/hook.ts",
       index: "src/index.ts",
+      setup: "src/setup.ts",
       wrap: "src/wrap.ts"
     },
     format: ["esm"],

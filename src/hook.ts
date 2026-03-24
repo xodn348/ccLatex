@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   buildHookBlock,
+  buildPtyHookBlock,
   getDefaultRcPath,
   removeHookBlock,
   upsertHookBlock,
@@ -83,7 +84,7 @@ const writeRcFile = (path: string, content: string): void => {
 
 const handleInstall = (path: string, target: HookTarget): void => {
   const existing = readRcFile(path);
-  const block = buildHookBlock(target);
+  const block = buildPtyHookBlock(target);
   const next = upsertHookBlock(existing, block);
   writeRcFile(path, next);
   process.stdout.write(`Installed cclatex hook for '${target.functionName}' in ${path}\n`);

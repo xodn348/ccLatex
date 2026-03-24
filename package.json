@@ -10,6 +10,7 @@
   "bin": {
     "cclatex": "dist/cli.js",
     "cclatex-hook": "dist/hook.js",
+    "cclatex-setup": "dist/setup.js",
     "cclatex-wrap": "dist/wrap.js"
   },
   "files": [
