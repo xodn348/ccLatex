@@ -26,7 +26,7 @@ Usage
   $ cclatex
 
 Options
-  --font-size   Font size used by renderer (default: 20)
+  --font-size   Font size used by renderer (default: 12)
   --background  PNG background color (default: white)
 `,
     {
@@ -35,7 +35,7 @@ Options
       flags: {
         fontSize: {
           type: "number",
-          default: 20
+          default: 12
         },
         background: {
           type: "string",
@@ -48,7 +48,7 @@ Options
 
 export const runCli = async (argv: string[] = process.argv.slice(2)): Promise<void> => {
   const cli = createCli(argv);
-  const fontSize = typeof cli.flags.fontSize === "number" ? cli.flags.fontSize : 20;
+  const fontSize = typeof cli.flags.fontSize === "number" ? cli.flags.fontSize : 12;
   const background = typeof cli.flags.background === "string" ? cli.flags.background : "white";
   const flags: CliFlags = {
     fontSize,

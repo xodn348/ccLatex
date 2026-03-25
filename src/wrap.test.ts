@@ -6,7 +6,7 @@ describe("parseWrapArgs", () => {
     const parsed = parseWrapArgs(["oc", "run"]);
     expect(parsed.command).toBe("oc");
     expect(parsed.args).toEqual(["run"]);
-    expect(parsed.flags.fontSize).toBe(20);
+    expect(parsed.flags.fontSize).toBe(12);
     expect(parsed.flags.background).toBe("white");
   });
 
@@ -40,7 +40,7 @@ describe("runWithoutPtyFallback", () => {
     const exitCode = runWithoutPtyFallback({
       command: "definitely-not-a-real-command-12345",
       args: [],
-      fontSize: 20,
+      fontSize: 12,
       backgroundColor: "white",
       columns: 80,
       rows: 24,
@@ -54,7 +54,7 @@ describe("runWithoutPtyFallback", () => {
     const exitCode = runWithoutPtyFallback({
       command: process.execPath,
       args: ["-e", "process.exit(5)"],
-      fontSize: 20,
+      fontSize: 12,
       backgroundColor: "white",
       columns: 80,
       rows: 24,
@@ -78,7 +78,7 @@ describe("runWithoutPtyRenderedFallback", () => {
       const exitCode = await runWithoutPtyRenderedFallback({
         command: process.execPath,
         args: ["-e", "console.log('$$x^2$$')"],
-        fontSize: 20,
+        fontSize: 12,
         backgroundColor: "white",
         columns: 80,
         rows: 24,
@@ -96,7 +96,7 @@ describe("runWithoutPtyRenderedFallback", () => {
     const exitCode = await runWithoutPtyRenderedFallback({
       command: "definitely-not-a-real-command-12345",
       args: [],
-      fontSize: 20,
+      fontSize: 12,
       backgroundColor: "white",
       columns: 80,
       rows: 24,

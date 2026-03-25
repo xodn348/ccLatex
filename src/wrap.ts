@@ -37,7 +37,7 @@ const sanitizeEnv = (source: NodeJS.ProcessEnv): NodeJS.ProcessEnv => {
 };
 
 export const parseWrapArgs = (argv: string[]): ParsedWrapArgs => {
-  let fontSize = 20;
+  let fontSize = 12;
   let background = "white";
 
   let i = 0;

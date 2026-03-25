@@ -9,7 +9,7 @@ describe("createCli", () => {
 
   test("uses defaults", () => {
     const cli = createCli([]);
-    expect(cli.flags.fontSize).toBe(20);
+    expect(cli.flags.fontSize).toBe(12);
     expect(cli.flags.background).toBe("transparent");
   });
 
@@ -23,6 +23,6 @@ describe("createCli", () => {
   });
 
   test("rejects invalid background characters", () => {
-    expect(() => validateCliFlags({ fontSize: 20, background: "white;rm -rf /" })).toThrow();
+    expect(() => validateCliFlags({ fontSize: 12, background: "white;rm -rf /" })).toThrow();
   });
 });

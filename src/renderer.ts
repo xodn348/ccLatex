@@ -59,7 +59,7 @@ export const renderLatex = async (
   formula: string,
   options: RenderOptions
 ): Promise<RenderResult> => {
-  const fontSize = options.fontSize ?? 20;
+  const fontSize = options.fontSize ?? 12;
   const backgroundColor = options.backgroundColor ?? "transparent";
   const textColor = options.textColor ?? (backgroundColor === "transparent" ? "white" : "black");
   const context = await getMathJaxContext();
@@ -80,7 +80,7 @@ export const renderLatex = async (
     );
   }
 
-  let pipeline = sharp(Buffer.from(svgMarkup), { density: 300 });
+  let pipeline = sharp(Buffer.from(svgMarkup), { density: 150 });
 
   // Only flatten (add opaque background) when explicitly requested
   if (backgroundColor !== "transparent") {

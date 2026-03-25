@@ -15,7 +15,7 @@ const isITerm2 = (): boolean => {
 /** Convert 300dpi pixel width to approximate character-cell width for iTerm2 display */
 const computeDisplayWidth = (pixelWidth: number): number => {
   // Scale from 300dpi render to 72dpi screen equivalent, then to char cells (~8px each)
-  const screenPixels = pixelWidth * (72 / 300);
+  const screenPixels = pixelWidth * (72 / 150);
   return Math.max(2, Math.round(screenPixels / 8));
 };
 
