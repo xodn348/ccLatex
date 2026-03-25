@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseWrapArgs, runWithoutPtyFallback } from "./wrap.js";
+import { parseWrapArgs, runWithoutPtyFallback, runWithoutPtyRenderedFallback } from "./wrap.js";
 
 describe("parseWrapArgs", () => {
   test("parses command and args", () => {
@@ -62,5 +62,47 @@ describe("runWithoutPtyFallback", () => {
     });
 
     expect(exitCode).toBe(5);
+  });
+});
+
+describe("runWithoutPtyRenderedFallback", () => {
+  test("renders math output instead of raw $$ delimiters", async () => {
+    const chunks: string[] = [];
+    const origWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = (chunk: string | Uint8Array) => {
+      chunks.push(String(chunk));
+      return true;
+    };
+
+    try {
+      const exitCode = await runWithoutPtyRenderedFallback({
+        command: process.execPath,
+        args: ["-e", "console.log('$$x^2$$')"],
+        fontSize: 20,
+        backgroundColor: "white",
+        columns: 80,
+        rows: 24,
+        env: process.env,
+      });
+
+      expect(exitCode).toBe(0);
+      expect(chunks.join("")).not.toContain("$$x^2$$");
+    } finally {
+      process.stdout.write = origWrite;
+    }
+  });
+
+  test("returns 127 when command is missing", async () => {
+    const exitCode = await runWithoutPtyRenderedFallback({
+      command: "definitely-not-a-real-command-12345",
+      args: [],
+      fontSize: 20,
+      backgroundColor: "white",
+      columns: 80,
+      rows: 24,
+      env: process.env,
+    });
+
+    expect(exitCode).toBe(127);
   });
 });

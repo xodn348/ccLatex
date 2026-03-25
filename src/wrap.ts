@@ -1,6 +1,6 @@
 import * as pty from "node-pty";
 import { accessSync, constants, realpathSync } from "node:fs";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { PtyLatexProcessor } from "./pty-processor.js";
 import { validateCliFlags } from "./cli.js";
@@ -168,6 +168,60 @@ export const runWithoutPtyFallback = (options: PtyWrapperOptions): number => {
   return 1;
 };
 
+export const runWithoutPtyRenderedFallback = async (options: PtyWrapperOptions): Promise<number> => {
+  const child = spawn(options.command, options.args, {
+    cwd: process.cwd(),
+    env: options.env,
+    stdio: ["inherit", "pipe", "inherit"]
+  });
+
+  const processor = new PtyLatexProcessor({
+    fontSize: options.fontSize,
+    backgroundColor: options.backgroundColor
+  });
+
+  return await new Promise<number>((resolve) => {
+    let queue = Promise.resolve();
+
+    child.on("error", (error: NodeJS.ErrnoException) => {
+      if (error.code === "ENOENT") {
+        process.stderr.write(`Command not found: ${options.command}\n`);
+        resolve(127);
+        return;
+      }
+
+      const message = error instanceof Error ? error.message : "Failed to spawn command";
+      process.stderr.write(`${message}\n`);
+      resolve(toSpawnFailureCode(error));
+    });
+
+    child.stdout?.on("data", (chunk: Buffer | string) => {
+      const text = Buffer.isBuffer(chunk) ? chunk.toString("utf8") : String(chunk);
+      queue = queue.then(async () => {
+        const transformed = await processor.process(text);
+        if (transformed) {
+          process.stdout.write(transformed);
+        }
+      }).catch(() => {
+        process.stdout.write(text);
+      });
+    });
+
+    child.on("close", (code) => {
+      void queue
+        .then(async () => {
+          const tail = await processor.flush();
+          if (tail) {
+            process.stdout.write(tail);
+          }
+        })
+        .finally(() => {
+          resolve(typeof code === "number" ? code : 1);
+        });
+    });
+  });
+};
+
 const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> => {
   let child: pty.IPty;
 
@@ -197,7 +251,7 @@ const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> =>
       typeof error.message === "string" &&
       error.message.includes("posix_spawnp failed")
     ) {
-      return runWithoutPtyFallback(options);
+      return await runWithoutPtyRenderedFallback(options);
     }
 
     throw error;
