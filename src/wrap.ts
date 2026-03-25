@@ -222,6 +222,13 @@ export const runWithoutPtyRenderedFallback = async (options: PtyWrapperOptions):
   });
 };
 
+export const shouldUseRenderedFallback = (
+  stdinIsTTY: boolean | undefined,
+  stdoutIsTTY: boolean | undefined
+): boolean => {
+  return !(stdinIsTTY && stdoutIsTTY);
+};
+
 const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> => {
   let child: pty.IPty;
 
@@ -251,7 +258,10 @@ const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> =>
       typeof error.message === "string" &&
       error.message.includes("posix_spawnp failed")
     ) {
-      return await runWithoutPtyRenderedFallback(options);
+      if (shouldUseRenderedFallback(process.stdin.isTTY, process.stdout.isTTY)) {
+        return await runWithoutPtyRenderedFallback(options);
+      }
+      return runWithoutPtyFallback(options);
     }
 
     throw error;

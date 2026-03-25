@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseWrapArgs, runWithoutPtyFallback, runWithoutPtyRenderedFallback } from "./wrap.js";
+import { parseWrapArgs, runWithoutPtyFallback, runWithoutPtyRenderedFallback, shouldUseRenderedFallback } from "./wrap.js";
 
 describe("parseWrapArgs", () => {
   test("parses command and args", () => {
@@ -104,5 +104,19 @@ describe("runWithoutPtyRenderedFallback", () => {
     });
 
     expect(exitCode).toBe(127);
+  });
+});
+
+describe("shouldUseRenderedFallback", () => {
+  test("returns false for interactive TTY sessions", () => {
+    expect(shouldUseRenderedFallback(true, true)).toBe(false);
+  });
+
+  test("returns true when stdin is not a TTY", () => {
+    expect(shouldUseRenderedFallback(false, true)).toBe(true);
+  });
+
+  test("returns true when stdout is not a TTY", () => {
+    expect(shouldUseRenderedFallback(true, false)).toBe(true);
   });
 });
