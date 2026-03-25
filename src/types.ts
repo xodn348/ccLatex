@@ -10,6 +10,7 @@ export interface RenderOptions {
   displayMode: boolean;
   fontSize?: number;
   backgroundColor?: string;
+  textColor?: string;
 }
 
 export interface RenderResult {
