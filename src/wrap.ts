@@ -234,12 +234,12 @@ const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> =>
 
   try {
     child = pty.spawn(options.command, options.args, {
-      name: "xterm-color",
+      name: options.env.TERM || "xterm-256color",
       cols: options.columns,
       rows: options.rows,
       cwd: process.cwd(),
       env: options.env,
-      handleFlowControl: true
+      handleFlowControl: false
     });
   } catch (error: unknown) {
     if (

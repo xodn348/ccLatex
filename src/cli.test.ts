@@ -10,7 +10,7 @@ describe("createCli", () => {
   test("uses defaults", () => {
     const cli = createCli([]);
     expect(cli.flags.fontSize).toBe(20);
-    expect(cli.flags.background).toBe("white");
+    expect(cli.flags.background).toBe("transparent");
   });
 
   test("validates accepted flag values", () => {

@@ -60,15 +60,34 @@ export const renderLatex = async (
   options: RenderOptions
 ): Promise<RenderResult> => {
   const fontSize = options.fontSize ?? 20;
-  const backgroundColor = options.backgroundColor ?? "white";
+  const backgroundColor = options.backgroundColor ?? "transparent";
+  const textColor = options.textColor ?? (backgroundColor === "transparent" ? "white" : "black");
   const context = await getMathJaxContext();
 
-  const svgMarkup = context.convert(formula, options.displayMode, fontSize);
+  let svgMarkup = context.convert(formula, options.displayMode, fontSize);
 
-  const png = await sharp(Buffer.from(svgMarkup))
-    .flatten({ background: backgroundColor })
-    .png()
-    .toBuffer();
+  // Inject text color into SVG for dark terminal compatibility
+  // MathJax SVG already has a style attribute, so we must merge into it (not add a duplicate)
+  if (svgMarkup.match(/<svg[^>]*style="[^"]*"/i)) {
+    svgMarkup = svgMarkup.replace(
+      /(<svg[^>]*style=")/i,
+      `$1color: ${textColor}; `
+    );
+  } else {
+    svgMarkup = svgMarkup.replace(
+      /(<svg[^>]*)(>)/i,
+      `$1 style="color: ${textColor}"$2`
+    );
+  }
+
+  let pipeline = sharp(Buffer.from(svgMarkup), { density: 300 });
+
+  // Only flatten (add opaque background) when explicitly requested
+  if (backgroundColor !== "transparent") {
+    pipeline = pipeline.flatten({ background: backgroundColor });
+  }
+
+  const png = await pipeline.png().toBuffer();
 
   const metadata = await sharp(png).metadata();
 

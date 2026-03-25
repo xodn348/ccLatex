@@ -5,6 +5,7 @@
     "": {
       "name": "cclatex",
       "dependencies": {
+        "ansi-escapes": "^7.3.0",
         "mathjax-full": "^3.2.2",
         "meow": "^13.2.0",
         "node-pty": "^1.1.0",

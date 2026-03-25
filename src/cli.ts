@@ -39,7 +39,7 @@ Options
         },
         background: {
           type: "string",
-          default: "white"
+          default: "transparent"
         }
       }
     }
