@@ -45,6 +45,35 @@ Run without install (pipe mode):
 npx cclatex
 ```
 
+## Using with Claude Code
+
+Requirements:
+
+- Node.js 18+ or Bun
+- iTerm2 on macOS for inline image support
+
+Install:
+
+```bash
+npm install -g cclatex
+```
+
+Launch Claude Code through the PTY wrapper:
+
+```bash
+cclatex-wrap -- claude
+# or, depending on your local binary name:
+cclatex-wrap -- claude-code
+```
+
+`cclatex` defaults (`fontSize=12`, `density=150`) are tuned for narrow ~80-column terminals like Claude Code, so formulas render compactly and fit better without overwhelming the terminal width.
+
+Alias tip for daily use:
+
+```bash
+alias claude='cclatex-wrap -- claude'
+```
+
 ## How To Use
 
 ### 1) Pipe mode (simple streams)
@@ -68,7 +97,7 @@ Use `--` before wrapped command flags so wrapper flags and command flags are sep
 
 Wrapper options:
 
-- `--font-size <number>` (default: `20`)
+- `--font-size <number>` (default: `12`)
 - `--background <color>` (default: `white`)
 
 PTY wrapper mode is the recommended way for interactive AI tools because it avoids shell hook side effects.
