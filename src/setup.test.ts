@@ -57,7 +57,27 @@ describe("detectInstalledClis", () => {
 
     detectInstalledClis(registry, mockExec);
     expect(capturedCmd).toContain("command -v");
+    expect(capturedCmd).toContain("[ -f");
+    expect(capturedCmd).toContain("[ -x");
     expect(capturedCmd).toContain("claude");
+  });
+
+  test("does not treat shell keywords as installed CLIs", () => {
+    const registry = [
+      { name: "Continue", binName: "continue", functionName: "continue" },
+      { name: "Claude", binName: "claude", functionName: "claude" },
+    ];
+
+    const mockExec = (cmd: string) => {
+      if (cmd.includes("claude")) {
+        return;
+      }
+      throw new Error("not executable file");
+    };
+
+    const result = detectInstalledClis(registry, mockExec);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.functionName).toBe("claude");
   });
 });
 

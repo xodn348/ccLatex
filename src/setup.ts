@@ -13,6 +13,8 @@ import {
 
 type ExecFn = (cmd: string, opts: object) => unknown;
 
+const isSafeCommandToken = (value: string): boolean => /^[A-Za-z0-9_./-]+$/.test(value);
+
 export const detectInstalledClis = (
   registry: AiCliEntry[],
   exec: ExecFn = execSync,
@@ -22,8 +24,15 @@ export const detectInstalledClis = (
   const uniqueBins = [...new Set(registry.map((e) => e.binName))];
 
   for (const binName of uniqueBins) {
+    if (!isSafeCommandToken(binName)) {
+      continue;
+    }
+
     try {
-      exec(`command -v ${binName}`, { stdio: "ignore", shell: "/bin/sh" });
+      exec(
+        `cmd_path="$(command -v -- ${binName} 2>/dev/null)" && [ -n "$cmd_path" ] && [ -f "$cmd_path" ] && [ -x "$cmd_path" ]`,
+        { stdio: "ignore", shell: "/bin/sh" }
+      );
       installedBins.add(binName);
     } catch {
       // Binary not found in PATH — skip

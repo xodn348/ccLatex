@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
 import { AI_CLI_REGISTRY, buildHookBlock, buildMultiPtyHookBlock, buildPtyHookBlock, HOOK_MARKER_END, HOOK_MARKER_START, removeHookBlock, upsertHookBlock } from "./hook-utils.js";
-import type { HookTarget } from "./hook-utils.js";
 
 describe("hook utils", () => {
   test("builds hook block for command", () => {
@@ -69,9 +68,10 @@ describe("PTY wrapper mode", () => {
     expect(block).toContain("command -v cclatex-wrap");
   });
 
-  test("buildPtyHookBlock contains npx fallback", () => {
+  test("buildPtyHookBlock falls back to direct command when cclatex-wrap not found", () => {
     const block = buildPtyHookBlock({ functionName: "oc", upstreamCommand: "opencode" });
-    expect(block).toContain("npx --yes cclatex-wrap");
+    expect(block).not.toContain("npx");
+    expect(block).toContain('command opencode "$@"');
   });
 
   test("buildPtyHookBlock throws on invalid function name", () => {
@@ -114,6 +114,14 @@ describe("buildMultiPtyHookBlock", () => {
     ]);
     expect(block).toContain("cclatex-wrap goose");
     expect(block).not.toContain("| cclatex");
+  });
+
+  test("each target falls back to direct command when cclatex-wrap is unavailable", () => {
+    const block = buildMultiPtyHookBlock([
+      { functionName: "oc", upstreamCommand: "opencode" },
+    ]);
+    expect(block).not.toContain("npx");
+    expect(block).toContain('command opencode "$@"');
   });
 
   test("throws on invalid function name", () => {

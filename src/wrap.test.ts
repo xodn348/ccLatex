@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { parseWrapArgs } from "./wrap.js";
+import { parseWrapArgs, runWithoutPtyFallback } from "./wrap.js";
 
 describe("parseWrapArgs", () => {
   test("parses command and args", () => {
@@ -32,5 +32,35 @@ describe("parseWrapArgs", () => {
 
   test("rejects unknown wrapper options", () => {
     expect(() => parseWrapArgs(["--unknown", "oc"])).toThrow();
+  });
+});
+
+describe("runWithoutPtyFallback", () => {
+  test("returns 127 for a missing command", () => {
+    const exitCode = runWithoutPtyFallback({
+      command: "definitely-not-a-real-command-12345",
+      args: [],
+      fontSize: 20,
+      backgroundColor: "white",
+      columns: 80,
+      rows: 24,
+      env: process.env,
+    });
+
+    expect(exitCode).toBe(127);
+  });
+
+  test("returns wrapped command exit code", () => {
+    const exitCode = runWithoutPtyFallback({
+      command: process.execPath,
+      args: ["-e", "process.exit(5)"],
+      fontSize: 20,
+      backgroundColor: "white",
+      columns: 80,
+      rows: 24,
+      env: process.env,
+    });
+
+    expect(exitCode).toBe(5);
   });
 });

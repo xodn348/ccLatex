@@ -132,6 +132,42 @@ const commandExists = (command: string, env: NodeJS.ProcessEnv): boolean => {
   return probe.status === 0;
 };
 
+const toSpawnFailureCode = (error: NodeJS.ErrnoException): number => {
+  if (error.code === "ENOENT") {
+    return 127;
+  }
+  if (error.code === "EACCES") {
+    return 126;
+  }
+  return 1;
+};
+
+export const runWithoutPtyFallback = (options: PtyWrapperOptions): number => {
+  const result = spawnSync(options.command, options.args, {
+    cwd: process.cwd(),
+    env: options.env,
+    stdio: "inherit"
+  });
+
+  if (result.error) {
+    const error = result.error;
+    if (isErrnoException(error) && error.code === "ENOENT") {
+      process.stderr.write(`Command not found: ${options.command}\n`);
+      return 127;
+    }
+
+    const message = error instanceof Error ? error.message : "Failed to run command without PTY";
+    process.stderr.write(`${message}\n`);
+    return isErrnoException(error) ? toSpawnFailureCode(error) : 1;
+  }
+
+  if (typeof result.status === "number") {
+    return result.status;
+  }
+
+  return 1;
+};
+
 const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> => {
   let child: pty.IPty;
 
@@ -155,6 +191,15 @@ const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> =>
       process.stderr.write(`Command not found: ${options.command}\n`);
       return 127;
     }
+
+    if (
+      isErrnoException(error) &&
+      typeof error.message === "string" &&
+      error.message.includes("posix_spawnp failed")
+    ) {
+      return runWithoutPtyFallback(options);
+    }
+
     throw error;
   }
 

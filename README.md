@@ -6,10 +6,12 @@
 
 Render LaTeX expressions in terminal output as inline images.
 
-`cclatex` supports two usage modes:
+`cclatex` supports two runtime modes:
 
 - Pipe mode (`cclatex`): transform stdin to stdout.
 - PTY wrapper mode (`cclatex-wrap`): run interactive CLIs (such as `oc`, `codex`, `claude`) without shell hook injection.
+
+Production recommendation: keep shell startup clean and use launcher/wrapper integration instead of auto-writing rc hooks.
 
 ## Quick Start
 
@@ -19,10 +21,16 @@ Install globally:
 npm install -g cclatex
 ```
 
-For `oc` users (recommended):
+For interactive AI CLIs (recommended):
 
 ```bash
-cclatex-wrap oc
+cclatex-wrap -- opencode
+```
+
+For transparent daily use (no extra typing), add a local alias or launcher wrapper:
+
+```bash
+alias oc='cclatex-wrap -- opencode'
 ```
 
 For one-shot pipe usage:
@@ -31,7 +39,7 @@ For one-shot pipe usage:
 echo 'The formula $E=mc^2$' | cclatex
 ```
 
-Run without install:
+Run without install (pipe mode):
 
 ```bash
 npx cclatex
@@ -63,9 +71,11 @@ Wrapper options:
 - `--font-size <number>` (default: `20`)
 - `--background <color>` (default: `white`)
 
-PTY wrapper mode is the recommended way if you want to avoid shell hook side effects.
+PTY wrapper mode is the recommended way for interactive AI tools because it avoids shell hook side effects.
 
 ## Optional Shell Hook (`cclatex-hook`)
+
+Shell hook mode is optional and not the default recommendation. Use it only if you explicitly want rc-file injection.
 
 If you want automatic wrapping via shell function injection:
 
@@ -95,6 +105,7 @@ CCLATEX_NO_WRAP=1 oc
 
 - `Command not found`: verify wrapped command exists in `PATH`.
 - Wrapper issues in CI/non-interactive shells: run `cclatex-wrap` in a real terminal session (TTY).
+- If wrapped output shows raw `$$...$$`, your terminal/runtime likely fell back from PTY rendering to plain passthrough.
 - Unexpected hook behavior: remove with `cclatex-hook remove --command <name>` and use `cclatex-wrap` instead.
 
 ## Local Development
