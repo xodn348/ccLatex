@@ -31,7 +31,12 @@
     "build": "tsup",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "bun run typecheck && bun test && bun run build"
+    "prepublishOnly": "bun run typecheck && bun test && bun run build",
+    "preview:iterm": "node scripts/iterm-show-image.mjs",
+    "preview:server": "node scripts/iterm-preview-server.mjs",
+    "preview:send": "node scripts/iterm-preview-send.mjs",
+    "preview:agent:install": "node scripts/iterm-preview-agent-install.mjs",
+    "preview:agent:send": "node scripts/iterm-preview-agent-send.mjs"
   },
   "dependencies": {
     "ansi-escapes": "^7.3.0",

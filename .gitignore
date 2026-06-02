@@ -3,3 +3,5 @@ dist/
 *.tgz
 .sisyphus/
 .DS_Store
+
+.omx/

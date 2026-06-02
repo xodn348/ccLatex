@@ -57,11 +57,11 @@ const getMathJaxContext = async (): Promise<MathJaxContext> => {
 
 export const renderLatex = async (
   formula: string,
-  options: RenderOptions
+  options: RenderOptions = { displayMode: false }
 ): Promise<RenderResult> => {
   const fontSize = options.fontSize ?? 12;
   const backgroundColor = options.backgroundColor ?? "transparent";
-  const textColor = options.textColor ?? (backgroundColor === "transparent" ? "white" : "black");
+  const textColor = options.textColor ?? process.env.CCLATEX_TEXT_COLOR ?? "black";
   const context = await getMathJaxContext();
 
   let svgMarkup = context.convert(formula, options.displayMode, fontSize);

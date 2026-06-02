@@ -182,6 +182,7 @@ export const runWithoutPtyRenderedFallback = async (options: PtyWrapperOptions):
 
   return await new Promise<number>((resolve) => {
     let queue = Promise.resolve();
+    let tuiPassthrough = false;
 
     child.on("error", (error: NodeJS.ErrnoException) => {
       if (error.code === "ENOENT") {
@@ -197,6 +198,13 @@ export const runWithoutPtyRenderedFallback = async (options: PtyWrapperOptions):
 
     child.stdout?.on("data", (chunk: Buffer | string) => {
       const text = Buffer.isBuffer(chunk) ? chunk.toString("utf8") : String(chunk);
+      if (!tuiPassthrough && containsFullScreenTuiControl(text)) {
+        tuiPassthrough = true;
+      }
+      if (tuiPassthrough) {
+        process.stdout.write(text);
+        return;
+      }
       queue = queue.then(async () => {
         const transformed = await processor.process(text);
         if (transformed) {
@@ -227,6 +235,10 @@ export const shouldUseRenderedFallback = (
   stdoutIsTTY: boolean | undefined
 ): boolean => {
   return !(stdinIsTTY && stdoutIsTTY);
+};
+
+const containsFullScreenTuiControl = (text: string): boolean => {
+  return /\u001b\[\?1049[hl]|\u001b\[[0-9;]*[HfABCDJKsu]/.test(text);
 };
 
 const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> => {
@@ -275,6 +287,7 @@ const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> =>
   return await new Promise<number>((resolve, reject) => {
     let completed = false;
     let queue = Promise.resolve();
+    let tuiPassthrough = false;
 
     const stdinHandler = (chunk: Buffer | string): void => {
       const text = Buffer.isBuffer(chunk) ? chunk.toString("utf8") : chunk;
@@ -326,6 +339,13 @@ const runWrappedCommand = async (options: PtyWrapperOptions): Promise<number> =>
     };
 
     const dataDisposable = child.onData((data: string) => {
+      if (!tuiPassthrough && containsFullScreenTuiControl(data)) {
+        tuiPassthrough = true;
+      }
+      if (tuiPassthrough) {
+        process.stdout.write(data);
+        return;
+      }
       queue = queue.then(async () => {
         const transformed = await processor.process(data);
         if (transformed) {
